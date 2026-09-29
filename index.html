@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en" data-theme="dark"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14"><title>Project Doctor</title>
+<link rel="icon" href="assets/icon.svg"><link rel="stylesheet" href="style.css"></head>
+<body>
+<nav id="nav"><div class="brand"><img src="assets/icon.svg" alt="" width="28" height="28">Project Doctor</div>
+<button data-v="home"><i>⌂</i><span>Home</span></button>
+<button data-v="scans"><i>🕘</i><span>Scans</span></button>
+<button data-v="issues"><i>⚠</i><span>Issues</span></button>
+<button data-v="files"><i>📁</i><span>Files</span></button>
+<button data-v="settings"><i>⚙</i><span>Settings</span></button></nav>
+<main id="main"></main>
+<input id="zip" type="file" hidden multiple accept=".zip,.html,.htm,.css,.js,.mjs,.json,.svg,image/*">
+<input id="dir" type="file" hidden webkitdirectory>
+<script type="module" src="app.js"></script></body></html>
