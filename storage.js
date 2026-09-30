@@ -1,5 +1,6 @@
-const open=()=>new Promise((res,rej)=>{const r=indexedDB.open('projectdoctor',1);r.onupgradeneeded=()=>r.result.createObjectStore('scans',{keyPath:'id',autoIncrement:true});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const tx=async(m,f)=>{const d=await open();return new Promise((res,rej)=>{const q=f(d.transaction('scans',m).objectStore('scans'));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})};
-export const saveScan=r=>tx('readwrite',s=>s.add(r));
-export const allScans=async()=>(await tx('readonly',s=>s.getAll())).sort((a,b)=>b.date-a.date);
-export const clearScans=()=>tx('readwrite',s=>s.clear());
+const K='pd_scans_v2',MAX=12;
+const read=()=>{try{return JSON.parse(localStorage.getItem(K)||'[]')}catch{return[]}};
+export const allScans=async()=>read().sort((a,b)=>b.date-a.date);
+export const saveScan=async r=>{let a=[{...r,id:Date.now()},...read()].slice(0,MAX);
+while(a.length){try{localStorage.setItem(K,JSON.stringify(a));return}catch{if(a.length===1)throw Error('Device storage is full. Clear old scans in Settings.');a.pop()}}};
+export const clearScans=async()=>localStorage.removeItem(K);

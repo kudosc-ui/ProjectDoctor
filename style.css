@@ -1,4 +1,4 @@
-:root{--bg:#0a0e14;--s1:#111821;--s2:#182130;--bd:#233042;--tx:#e6edf3;--mu:#8895a7;--ac:#7c9cff;--ok:#3fb950;--warn:#f0883e;--bad:#f85149;--sug:#d4a72c;color-scheme:dark}
+:root{--bg:#090f11;--s1:#0e181b;--s2:#14252a;--bd:#1f3238;--tx:#e8f1f0;--mu:#8ba0a3;--ac:#4fd1c5;--ok:#3fb950;--warn:#f0883e;--bad:#f85149;--sug:#d4a72c;color-scheme:dark}
 [data-theme=light]{--bg:#f4f6f9;--s1:#fff;--s2:#eef1f5;--bd:#dbe1e9;--tx:#101720;--mu:#5a6676;--ac:#3b5bdb;color-scheme:light}
 @media(prefers-color-scheme:light){[data-theme=system]{--bg:#f4f6f9;--s1:#fff;--s2:#eef1f5;--bd:#dbe1e9;--tx:#101720;--mu:#5a6676;--ac:#3b5bdb;color-scheme:light}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -47,3 +47,28 @@ code{display:block;background:var(--s2);border-radius:8px;padding:8px 10px;margi
 @media(min-width:900px){body{display:grid;grid-template-columns:240px 1fr}#nav{position:sticky;top:0;height:100vh;flex-direction:column;border-top:0;border-right:1px solid var(--bd);padding:20px 12px;gap:4px;background:var(--s1)}
 #nav .brand{display:flex;gap:10px;align-items:center;font-weight:700;margin:0 8px 18px}#nav button{flex:none;flex-direction:row;gap:12px;font-size:15px;justify-content:flex-start;padding:0 14px;min-height:44px}#nav button.on{background:var(--s2)}main{padding-bottom:40px;width:100%}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+
+/* Full-screen flat layout */
+main{max-width:none;margin:0;width:100%;padding:24px clamp(16px,4vw,64px) calc(96px + env(safe-area-inset-bottom))}
+.top{margin:8px 0 24px;padding-bottom:18px;border-bottom:1px solid var(--bd)}h1{font-size:clamp(28px,4vw,40px)}
+.panel,.tree,.code,.hero,.cats button,.stats div,.item,.fr,.cmp div,.ctx{background:none;border-radius:0}
+.panel{border:0;border-bottom:1px solid var(--bd);padding:26px 0;margin:0}
+.hero{height:auto;min-height:220px;align-items:flex-start;text-align:left;border:0;border-bottom:1px solid var(--bd);padding:32px 0;background:linear-gradient(90deg,color-mix(in srgb,var(--ac) 14%,transparent),transparent 70%)}
+.hero b{font-size:clamp(28px,5vw,44px)}.wide{width:auto;border-radius:8px;margin:16px 0}button{border-radius:8px}
+.cats{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0}.cats button{border:0;border-bottom:1px solid var(--bd);min-height:52px;padding:0 4px}
+.stats{display:flex;flex-wrap:wrap;gap:0}.stats div{padding:6px 28px 6px 0;text-align:left;font-size:13px}.stats b{font-size:24px}
+.item,.fr{border:0;border-bottom:1px solid var(--bd);margin:0;padding:14px 4px}.item:hover,.fr:hover{background:var(--s2)}.item.on{box-shadow:none;background:var(--s2);border-left:3px solid var(--ac)}
+.tree{border:0;padding:0}.tree .fr{border-bottom:1px solid var(--bd)}
+.tabs{margin:0 0 14px;padding:10px 0;position:sticky;top:0;z-index:4;background:var(--bg);border-bottom:1px solid var(--bd)}.tab{border-radius:99px}
+input[type=search]{border-radius:8px;max-width:520px}
+.card{background:none;border:0;border-bottom:1px solid var(--bd);border-radius:0;padding:22px 0;margin:0}.card.passed{padding:14px 0}
+.card .hd{justify-content:flex-start;align-items:center;gap:10px}.card .hd em{margin-left:auto}.card .hd b{color:var(--tx)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--mu)}.critical .dot{background:var(--bad)}.warning .dot{background:var(--warn)}.suggestion .dot{background:var(--sug)}.passed .dot{background:var(--ok)}
+.card h3{font-size:17px;margin:8px 0 4px}.card p{max-width:80ch}
+.loc{display:inline-block;background:none;border:0;min-height:0;padding:4px 0;margin:6px 0;color:var(--ac);font:13px ui-monospace,Menlo,monospace;text-align:left;word-break:break-all;text-decoration:underline}p.loc{color:var(--mu);text-decoration:none}
+.ctx,.code{border:0;border-left:3px solid var(--bd);background:var(--s1);margin:8px 0;padding:6px 0;overflow-x:auto;font:12.5px/1.6 ui-monospace,Menlo,monospace}
+.code{border-left:0;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.ln.hit{background:color-mix(in srgb,var(--bad) 20%,transparent);box-shadow:inset 3px 0 var(--bad)}
+code{border-radius:0;background:var(--s1)}
+.cmp div{background:var(--s2)}
+@media(min-width:900px){.score{gap:32px}.ring{width:150px;height:150px}.ring b{font-size:46px}}
