@@ -1,4 +1,4 @@
-import {mk,ok,lineOf,snip,ext} from './util.js';
+import {mk,ok,lineOf,snip} from './util.js';
 const res=(from,ref)=>{try{ref=decodeURI(ref.split(/[?#]/)[0])}catch{return null}
 if(!ref||/^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(ref))return null;const b=ref[0]==='/'?[]:from.split('/').slice(0,-1);
 for(const s of ref.split('/')){if(s==='..')b.pop();else if(s&&s!=='.')b.push(s)}return b.join('/')};

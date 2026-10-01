@@ -1,9 +1,18 @@
 # Project Doctor
-Local, privacy-first health check for web projects. Vanilla HTML/CSS/JS with ES modules; nothing is uploaded.
+Local, privacy-first health check for web projects, built for phones. Vanilla HTML/CSS/JS with ES modules; nothing is uploaded.
 
-Run: `python3 -m http.server` in this folder, then open http://localhost:8000 (ES modules need http, not file://).
+## Run
+`python3 -m http.server` in this folder, then open http://localhost:8000 (service workers and ES modules need http, not file://).
 
-Score: 100 − 12 per critical (max 60) − 4 per warning (max 30) − 1 per suggestion (max 10). Findings are labelled Confirmed, Heuristic or Suggestion. Static analysis is not a substitute for browser testing.
+## What it finds
+Syntax errors, broken imports and exports, missing files, **wrong letter case in file names** (works on Windows, breaks online), misspelled HTML tags, duplicate attributes, mistyped CSS properties, invalid colours, missing units and semicolons, `100vw` overflow, typos in JS names (`.lenght`, `addEventListner`), `=` inside `if`, undefined click handlers, ids that are almost right, unused imports, risky calls, exposed secrets and PWA readiness. Each finding shows file and line. Static analysis cannot prove a project is bug-free.
 
-Deep scan: matches HTML tags, finds dead links/anchors, blank pages, invalid JSON, CSS brace errors, JS syntax errors, broken imports and missing element ids, each with file and line.
-Scans are stored in the device's localStorage (last 12) so they stay available between visits.
+## Make an Android APK with PWABuilder
+1. Host this folder over **HTTPS** (GitHub Pages, Netlify, Cloudflare Pages or Vercel; drag-and-drop the folder).
+2. Open https://www.pwabuilder.com, paste your site URL, press Start.
+3. Package for Android, download the ZIP, and install the `.apk`. Keep the signing key it gives you for future updates.
+
+Included for PWABuilder: `manifest.webmanifest`, `sw.js` (offline cache), `offline.html`, PNG icons 48 to 512 plus maskable 192/512 in `assets/icons/`, and `assetlinks.example.json` (see below).
+
+### Hide the browser bar (Digital Asset Links)
+After PWABuilder gives you the SHA-256 fingerprint, copy `assetlinks.example.json` to `.well-known/assetlinks.json` on your host, fill in the package name and fingerprint, and re-upload.

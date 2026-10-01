@@ -1,4 +1,4 @@
-import {mk,ok,lineOf,snip} from './util.js';
+import {mk,ok,lineOf,snip,near} from './util.js';
 const VOID=/^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/,OPT=/^(p|li|td|th|tr|thead|tbody|tfoot|option|dt|dd|html|body|head|colgroup)$/;
 const AF=Object.getPrototypeOf(async function(){}).constructor,blank=s=>s.replace(/[^\n]/g,' ');
 const rel=(f,r)=>{const b=f.split('/').slice(0,-1);for(const s of r.split('/')){if(s==='..')b.pop();else if(s!=='.')b.push(s)}return b.join('/')};
@@ -15,7 +15,7 @@ return st.length?[st.at(-1)[1],`"${st.at(-1)[0]}" is never closed`]:null}
 export function checkDeep(files){const o=[],T=f=>f.text!=null,isH=f=>/^html?$/.test(f.ext),pages=files.filter(f=>isH(f)&&T(f));
 const put=(f,cat,sev,kind,title,why,i)=>{const l=i==null?null:lineOf(f.text,i);o.push(mk(cat,sev,kind,title,why,f.path,l,l?snip(f.text,l):''))};
 for(const f of files)if(/^(html?|css|m?js|json|svg)$/.test(f.ext)&&(f.size===0||(T(f)&&!f.text.trim())))o.push(mk('Structure','warning','confirmed','Empty file','This file has no content, so it does nothing (or shows a blank page).',f.path));
-for(const f of files.filter(f=>f.ext==='json'&&T(f)&&f.text.trim())){try{JSON.parse(f.text)}catch(x){const m=/position (\d+)/.exec(x.message),n=/line (\d+)/.exec(x.message),l=n?+n[1]:m?lineOf(f.text,+m[1]):null;o.push(mk('Structure','critical','confirmed','Invalid JSON',String(x.message).slice(0,140),f.path,l,l?snip(f.text,l):''))}}
+for(const f of files.filter(f=>/^(json|webmanifest)$/.test(f.ext)&&T(f)&&f.text.trim())){try{JSON.parse(f.text)}catch(x){const m=/position (\d+)/.exec(x.message),n=/line (\d+)/.exec(x.message),l=n?+n[1]:m?lineOf(f.text,+m[1]):null;o.push(mk('Structure','critical','confirmed','Invalid JSON',String(x.message).slice(0,140),f.path,l,l?snip(f.text,l):''))}}
 const ids=new Set();
 for(const f of files.filter(T)){const t=f.text;if(isH(f)||/^m?js$/.test(f.ext))for(const m of t.matchAll(/\bid\s*=\s*["']?([\w-]+)/gi))ids.add(m[1]);for(const m of t.matchAll(/\.id\s*=\s*["']([^"']+)/g))ids.add(m[1])}
 for(const f of pages){const t=f.text,H=(sev,k,ti,w,i)=>put(f,'HTML',sev,k,ti,w,i);
@@ -50,6 +50,6 @@ const p=rel(f.path,m[3]),g=files.find(x=>x.path===p)||files.find(x=>x.path===p+'
 if(!g){put(f,'JavaScript','critical','confirmed','Import points to a missing file',`${m[3]} does not exist, so this script will fail to load.`,m.index);continue}
 const E=ex(g);if(m[1]&&!E.has('default'))put(f,'JavaScript','critical','confirmed','Default import has no default export',`${g.path} does not export a default value.`,m.index);
 for(let n of(m[2]||'').split(',')){n=n.trim().split(/\s+as\s+/)[0];if(n&&!E.has(n))put(f,'JavaScript','critical','confirmed',`"${n}" is not exported by ${g.path}`,'The import will throw at load time and the page will stay blank.',m.index)}}
-if(pages.length)for(const m of t.matchAll(/getElementById\(\s*["']([^"']+)["']\s*\)|querySelector\(\s*["']#([\w-]+)["']\s*\)/g)){const id=m[1]||m[2];if(!ids.has(id))put(f,'JavaScript','warning','heuristic',`Script looks for #${id}, which is not in any HTML file`,'If nothing creates this element later, the script will hit null and stop.',m.index)}}
+if(pages.length)for(const m of t.matchAll(/getElementById\(\s*["']([^"']+)["']\s*\)|querySelector\(\s*["']#([\w-]+)["']\s*\)/g)){const id=m[1]||m[2];if(!ids.has(id))put(f,'JavaScript','warning','heuristic',`Script looks for #${id}, which is not in any HTML file`,'If nothing creates this element later, the script will hit null and stop.'+((g=>g?` Did you mean #${g}?`:'')(near(id,ids,2))),m.index)}}
 if(js.length&&!bad)o.push(ok('JavaScript','No syntax errors detected','Every script compiled with the browser parser.'));
 return o}

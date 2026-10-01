@@ -1,0 +1,5 @@
+const V='project-doctor-v3',SHELL=['./','index.html','offline.html','style.css','app.js','scanner.js','util.js','storage.js','report.js','icons.js','js-checker.js','html-checker.js','css-checker.js','asset-checker.js','performance-checker.js','security-checker.js','deep-checker.js','insight-checker.js','manifest.webmanifest','assets/icon.svg','assets/icons/icon-192.png','assets/icons/icon-512.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
+e.respondWith(fetch(r).then(res=>{if(res.ok){const c=res.clone();caches.open(V).then(x=>x.put(r,c))}return res}).catch(()=>caches.match(r).then(m=>m||(r.mode==='navigate'?caches.match('offline.html'):Response.error()))))});

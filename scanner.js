@@ -1,8 +1,8 @@
 import {checkHTML} from './html-checker.js';import {checkCSS} from './css-checker.js';import {checkJS} from './js-checker.js';
 import {checkAssets} from './asset-checker.js';import {checkSecurity} from './security-checker.js';import {checkPerf} from './performance-checker.js';
-import {checkDeep} from './deep-checker.js';import {mk,ok,ext} from './util.js';
-export const CATS=['Structure','HTML','CSS','JavaScript','Assets','Performance','Security'];
-const TEXT=/\.(html?|css|m?js|json|svg|xml|txt|md|env)$|(^|\/)\.env/i,SKIP=/(^|\/)(node_modules|\.git|__MACOSX)\//,tick=()=>new Promise(r=>setTimeout(r));
+import {checkDeep} from './deep-checker.js';import {checkInsight} from './insight-checker.js';import {mk,ok,ext} from './util.js';
+export const CATS=['Structure','HTML','CSS','JavaScript','Assets','Performance','Security','PWA'];
+const TEXT=/\.(html?|css|m?js|json|webmanifest|svg|xml|txt|md|env)$|(^|\/)\.env/i,SKIP=/(^|\/)(node_modules|\.git|__MACOSX)\//,tick=()=>new Promise(r=>setTimeout(r));
 const W={critical:12,warning:4,suggestion:1};
 export async function readZip(buf){const v=new DataView(buf),u=new Uint8Array(buf);let e=u.length-22;while(e>=0&&v.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw Error('Not a valid ZIP file');
 let n=v.getUint16(e+10,true),p=v.getUint32(e+16,true);const out=[];
@@ -31,7 +31,7 @@ files.push(f);if(++i%20===0)await tick()}
 const F=[];step(1);F.push(...structure(files));await tick();
 step(2);if(cfg.html)F.push(...checkHTML(files));await tick();
 step(3);if(cfg.css)F.push(...checkCSS(files));await tick();
-step(4);if(cfg.js)F.push(...checkJS(files));if(cfg.deep!==0)F.push(...checkDeep(files));await tick();
+step(4);if(cfg.js)F.push(...checkJS(files));if(cfg.deep!==0)F.push(...checkDeep(files),...checkInsight(files));await tick();
 step(5);if(cfg.assets)F.push(...checkAssets(files));if(cfg.security)F.push(...checkSecurity(files));if(cfg.performance)F.push(...checkPerf(files));await tick();
 step(6);const O={critical:0,warning:1,suggestion:2,passed:3};F.sort((a,b)=>O[a.sev]-O[b.sev]);F.forEach((f,k)=>f.id=k);const tx=new Map(files.filter(f=>f.text!=null).map(f=>[f.path,f.text.split('\n')]));F.forEach(f=>{const L=tx.get(f.file);if(L&&f.line){const a=Math.max(0,f.line-3);f.ctx={s:a+1,l:L.slice(a,f.line+2).map(x=>x.slice(0,200))}}});
 const counts={critical:0,warning:0,suggestion:0,passed:0};F.forEach(f=>counts[f.sev]++);
