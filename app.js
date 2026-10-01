@@ -4,7 +4,7 @@ import * as DB from './storage.js';
 import {exportHTML,exportJSON} from './report.js';
 import {ic,CATIC} from './icons.js';
 const $=s=>document.querySelector(s),e=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
-const S={view:'home',rep:null,hist:[],pend:null,filter:'all',q:'',cat:'',file:null,line:null,sel:[],step:0,cfg:{theme:'dark',deep:1,html:1,css:1,js:1,assets:1,security:1,performance:1,...JSON.parse(localStorage.pd||'{}')}};
+const S={view:'home',rep:null,hist:[],pend:null,filter:'all',q:'',cat:'',file:null,line:null,sel:[],step:0,cfg:{theme:'dark',deep:1,html:1,css:1,js:1,assets:1,security:1,performance:1,...(()=>{try{return JSON.parse(localStorage.pd||'{}')}catch{return{}}})()}};
 const STEPS=['Reading files','Checking structure','Inspecting HTML','Inspecting CSS','Inspecting JavaScript','Checking assets, security & performance','Generating report'];
 const IC={critical:'🔴',warning:'🟠',suggestion:'🟡',passed:'🟢'},LB={critical:'Critical',warning:'Warning',suggestion:'Suggestion',passed:'Passed'};
 const ago=d=>{const n=Math.floor((Date.now()-d)/864e5);return n<1?'Today':n<2?'Yesterday':n+' days ago'};
@@ -28,9 +28,10 @@ issues(){const f=(k,l)=>`<button class="tab ${S.filter===k?'on':''}" data-a=flt 
 return`<header class=top><h1>Issues</h1></header><div class=tabs>${f('all','All')}${f('critical','Critical')}${f('warning','Warnings')}${f('suggestion','Suggestions')}${f('passed','Passed')}</div>
 <input id=q type=search placeholder="Search findings…" value="${e(S.q)}">${S.cat?`<button class="chip" data-a=nocat>${S.cat} ✕</button>`:''}<div id=list>${list()}</div>`},
 files(){const r=S.rep;if(!r)return`<header class=top><h1>Files</h1></header><p class=empty>Scan a project to browse its files.</p>`;
+const FL=r.files||r.index||[];
 if(S.file){const f=r.files?.find(x=>x.path===S.file);return`<header class=top><button class=g data-a=back>${ic('back',18)}Files</button><h2 class=path>${e(S.file)}</h2></header>${f?.text!=null?`<div class=code>${f.text.split('\n').slice(0,4000).map((t,i)=>`<div class="ln${i+1===S.line?' hit':''}" id=L${i+1}><i>${i+1}</i><span>${e(t)||' '}</span></div>`).join('')}</div>`:`<p class=empty>${f?`${fmt(f.size)} · preview not available for this file type.`:'Re-scan this project to browse its files.'}</p>`}`}
-let last=[];const rows=[...r.files].sort((a,b)=>a.path.localeCompare(b.path)).slice(0,500).map(f=>{const p=f.path.split('/'),d=p.slice(0,-1);let h='';d.forEach((s,i)=>{if(last[i]!==s){h+=`<div class=fd style="padding-left:${i*14+12}px">${ic('folder',16)}${e(s)}</div>`;last=d.slice(0,i+1)}});last=d;return h+`<button class=fr data-a=file data-p="${e(f.path)}" style="padding-left:${d.length*14+12}px"><span>${ic('file',16)}${e(p.at(-1))}</span><em>${fmt(f.size)}</em></button>`}).join('');
-return`<header class=top><h1>Files</h1><p>${r.files.length} files in ${e(r.name)}</p></header><div class=tree>${rows}</div>`},
+let last=[];const rows=[...FL].sort((a,b)=>a.path.localeCompare(b.path)).slice(0,500).map(f=>{const p=f.path.split('/'),d=p.slice(0,-1);let h='';d.forEach((s,i)=>{if(last[i]!==s){h+=`<div class=fd style="padding-left:${i*14+12}px">${ic('folder',16)}${e(s)}</div>`;last=d.slice(0,i+1)}});last=d;return h+`<button class=fr data-a=file data-p="${e(f.path)}" style="padding-left:${d.length*14+12}px"><span>${ic('file',16)}${e(p.at(-1))}</span><em>${fmt(f.size)}</em></button>`}).join('');
+return`<header class=top><h1>Files</h1><p>${FL.length} files in ${e(r.name)}</p></header>${FL.length?`<div class=tree>${rows}</div>`:'<p class=empty>No file list saved for this scan. Run a new scan to browse files.</p>'}`},
 scans(){const h=S.hist,pair=S.sel.map(id=>h.find(x=>x.id===id)).filter(Boolean).sort((a,b)=>a.date-b.date);
 let cmp='';if(pair.length===2){const[a,b]=pair,d=b.score-a.score;cmp=`<section class=panel><h3>Before / after</h3><div class=cmp><div><small>Previous</small><b>${a.score}</b></div><div><small>Current</small><b>${b.score}</b></div></div><p class=delta style="color:${d>=0?'var(--ok)':'var(--bad)'}">${d>0?'+':''}${d} score change</p><p>Warnings ${a.counts.warning} → ${b.counts.warning}<br>Critical ${a.counts.critical} → ${b.counts.critical}<br>Suggestions ${a.counts.suggestion} → ${b.counts.suggestion}</p></section>`}
 return`<header class=top><h1>Scans</h1><p>Tap two scans to compare.</p></header>${cmp}${S.sel.length===1?'<div class=row><button data-a=viewscan>Open issues from this scan</button></div>':''}${h.length?h.map(x=>`<button class="item ${S.sel.includes(x.id)?'on':''}" data-a=sel data-id=${x.id}><div><b>${e(x.name)}</b><small>${new Date(x.date).toLocaleString()}</small></div><span style="color:${col(x.score)}">${x.score}</span></button>`).join(''):'<p class=empty>Saved scans appear here so you can track progress.</p>'}`},
@@ -39,12 +40,12 @@ return`<header class=top><h1>Settings</h1></header><section class=panel><h3>Them
 <section class=panel><h3>Scan options</h3>${k('deep','Deep scan (tags, dead links, blank pages, broken imports)')}${k('html','Check HTML')}${k('css','Check CSS')}${k('js','Check JavaScript')}${k('assets','Check assets')}${k('security','Check security')}${k('performance','Check performance')}</section>
 <section class=panel><h3>Storage</h3><p>Scans are saved in this device's local storage and stay until you clear them. ${S.hist.length} saved.</p><button class=g data-a=clear>${ic('trash')}Clear scan history</button>${window.__pi?`<button class=wide data-a=install>${ic('download')}Install app</button>`:''}</section>
 <section class=panel><h3>Privacy</h3><p>Project files never leave this browser. There are no uploads, no analytics and no external requests. Only findings, statistics and a few lines of code around each issue are saved locally, never whole files.</p><h3>How the score works</h3><p>Starts at 100. Each critical finding −12 (max −60), each warning −4 (max −30), each suggestion −1 (max −10). Ignoring or reviewing an issue does not change it. Static checks cannot replace browser testing.</p></section>`}};
-const render=()=>{document.documentElement.dataset.theme=S.cfg.theme;$('#main').innerHTML=V[S.view]();document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(S.view==='scan'&&b.dataset.v==='home')));if(S.view==='files'&&S.line)document.getElementById('L'+S.line)?.scrollIntoView({block:'center'})};
-const go=v=>{S.view=v;render();scrollTo(0,0)},save=()=>localStorage.pd=JSON.stringify(S.cfg);
+const render=()=>{document.documentElement.dataset.theme=S.cfg.theme;document.querySelector('meta[name=theme-color]').content=S.cfg.theme==='light'?'#f4f6fb':'#070b14';$('#main').innerHTML=V[S.view]();document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view||(S.view==='scan'&&b.dataset.v==='home')));if(S.view==='files'&&S.line)document.getElementById('L'+S.line)?.scrollIntoView({block:'center'})};
+const go=(v,nop)=>{if(!nop)history.pushState({v},'');S.view=v;render();$('#main').scrollTop=0},save=()=>localStorage.pd=JSON.stringify(S.cfg);
 const openFile=(p,l)=>{S.file=p;S.line=l||null;go('files')};
-const run=async()=>{S.view='scan';S.step=0;render();try{const r=await scan(S.pend.entries,S.cfg,i=>{S.step=i;render()});r.name=S.pend.name;S.rep=r;S.pend=null;const{files,...rest}=r;await DB.saveScan(rest);S.hist=await DB.allScans()}catch(x){alert('Scan failed: '+x.message)}go('home')};
+const run=async()=>{S.view='scan';S.step=0;render();try{const r=await scan(S.pend.entries,S.cfg,i=>{S.step=i;render()});r.name=S.pend.name;S.rep=r;S.pend=null;const{files,...rest}=r;await DB.saveScan({...rest,index:files.slice(0,400).map(f=>({path:f.path,size:f.size}))});S.hist=await DB.allScans()}catch(x){alert('Scan failed: '+x.message)}go('home')};
 document.addEventListener('click',async ev=>{const t=ev.target.closest('[data-a],[data-v]');if(!t)return;const{a,v,i}=t.dataset,R=S.rep,f=R?.findings[+i];
-if(v)return go(v);
+if(v){if(v==='files'){S.file=null;S.line=null}return go(v)}
 if(a==='pick')$('#zip').click();else if(a==='dir')$('#dir').click();else if(a==='start')run();
 else if(a==='open')openFile(f.file,f.line);
 else if(a==='mark'||a==='ign'){const s=a==='mark'?'reviewed':'ignored';f.st=f.st===s?'':s;$('#list').innerHTML=list()}
@@ -64,3 +65,7 @@ DB.allScans().then(h=>{S.hist=h;if(h[0])S.rep=h[0];render()}).catch(()=>render()
 document.querySelectorAll('[data-ic]').forEach(n=>n.innerHTML=ic(n.dataset.ic,22));
 addEventListener('beforeinstallprompt',x=>{x.preventDefault();window.__pi=x;if(S.view==='settings')render()});
 if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+
+history.replaceState({v:'home'},'');addEventListener('popstate',x=>{S.file=null;S.line=null;S.view=(x.state&&x.state.v)||'home';if(S.view==='scan')S.view='home';render()});
+['gesturestart','gesturechange','dblclick'].forEach(t=>document.addEventListener(t,x=>x.preventDefault()));
+document.addEventListener('touchmove',x=>{if(x.touches.length>1)x.preventDefault()},{passive:false});
